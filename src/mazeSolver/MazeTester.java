@@ -1,3 +1,5 @@
+package mazeSolver;
+
 import java.io.*;
 import java.util.*;
 
@@ -92,6 +94,10 @@ class MazeTester {
 			exitR = Integer.parseInt(scanner.next());
 			exitC = Integer.parseInt(scanner.next());
 
+			while (scanner.hasNext()) {
+                int temp[]= {Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next())};
+                tunnelList.add(temp);
+			}
 			scanner.close();
 		} catch (FileNotFoundException e) {
 			System.err.println("Input file doesn't exist.");
