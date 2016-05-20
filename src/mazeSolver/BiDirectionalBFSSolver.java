@@ -14,7 +14,6 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 
 	boolean solved = false;
 	boolean[][] visited = null;
-	Cell[] edgeTo;
 	Random ran = new Random();
 
 	@Override
