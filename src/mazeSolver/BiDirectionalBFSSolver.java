@@ -6,6 +6,7 @@ import java.util.Random;
 
 import maze.Cell;
 import maze.Maze;
+import maze.StdDraw;
 
 /**
  * Implements Bi-directional BFS maze solving algorithm.
@@ -15,6 +16,13 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 	boolean solved = false;
 	boolean[][] visited = null;
 	Random ran = new Random();
+	
+	public void drawFtPrt2(Cell cell) {
+		// draw nothing if visualization is switched off
+		
+		StdDraw.setPenColor(StdDraw.RED);
+		StdDraw.filledCircle(cell.c + 0.5, cell.r + 0.5, 0.25);
+	} // end of drawFtPrt()
 
 	@Override
 	public void solveMaze(Maze maze) {
@@ -37,16 +45,22 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 			q.add(cell);
 			q2.add(cell2);
 			maze.drawFtPrt(cell);
-			maze.drawFtPrt(cell2);
+			drawFtPrt2(cell2);
 			
-			if (cell == cell2) {
+			if (q.contains(cell2) || q2.contains(cell)) {
 				solved = true;
 				return;
 			}
 			if ((maze.type == 1) && (cell.tunnelTo != null) && (!isVisited(cell.tunnelTo))) {
 				q.add(cell.tunnelTo);
+				
+			} 
+			if ((maze.type == 1) && (cell2.tunnelTo != null) && (!isVisited(cell2.tunnelTo))) {
 				q2.add(cell2.tunnelTo);
-			} else {
+				
+			} 
+			
+			else {
 				int[] dir = randomDir();
 				for (int i = 0; i < 6; i++) {
 					Cell next = cell.neigh[dir[i]];

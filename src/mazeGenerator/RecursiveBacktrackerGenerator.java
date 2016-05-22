@@ -38,28 +38,33 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 
 		Stack<Cell> stack = new Stack();
 
-		Cell cell1 = new Cell(r, c); 
+		Cell cell1 = new Cell(r, c);
 		cell1 = maze.map[r][c];
 		stack.push(cell1);
-
 
 		while (!stack.isEmpty()) {
 			Cell cell = stack.peek();
 			visited[cell.r][cell.c] = true;
-			boolean expandable = false;
-			int[] dir = randomDir();
-			for (int i = 0; i < 6; i++) {
-				Cell next = cell.neigh[dir[i]];
 
-				if ((next != null) && (cell.wall[dir[i]].present) && (!isVisited(next))) {
-					stack.push(next);
-					cell.wall[dir[i]].present = false;
-					expandable = true;
-					break;
+			if ((maze.type == 1) && (cell.tunnelTo != null) && (!isVisited(cell.tunnelTo))) {
+				stack.push(cell.tunnelTo);
+			} else {
+				boolean expandable = false;
+				int[] dir = randomDir();
+				for (int i = 0; i < 6; i++) {
+					Cell next = cell.neigh[dir[i]];
+
+					if ((next != null) && (cell.wall[dir[i]].present) && (!isVisited(next))) {
+						stack.push(next);
+						cell.wall[dir[i]].present = false;
+						expandable = true;
+						break;
+					}
 				}
+				if (!expandable)
+					stack.pop();
+
 			}
-			if (!expandable)
-				stack.pop();
 
 		}
 
