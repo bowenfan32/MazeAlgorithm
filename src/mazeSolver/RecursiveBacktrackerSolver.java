@@ -17,33 +17,41 @@ public class RecursiveBacktrackerSolver implements MazeSolver {
 
 	@Override
 	public void solveMaze(Maze maze) {
-		if (maze.type == 1) {
-			visited = new boolean[maze.sizeR][maze.sizeC];
-		} else {
+		// If maze type is 'normal', use standard coordinates
+		if (maze.type == 2) {
 			visited = new boolean[maze.sizeR][maze.sizeC + (maze.sizeR + 1) / 2];
+		} else {
+			visited = new boolean[maze.sizeR][maze.sizeC];
 		}
 
 		Stack<Cell> stack = new Stack();
+		// Add the entrance to the stack
 		stack.push(maze.entrance);
 
 		while (!stack.isEmpty()) {
+			// Mark first cell in stack as the current cell, and mark it as visited
 			Cell cell = stack.peek();
 			visited[cell.r][cell.c] = true;
 			maze.drawFtPrt(cell);
 
+			// If cell reaches exit, return solved
 			if (cell == maze.exit) {
 				solved = true;
 				return;
 			}
 
+			// If cell has an unvisited tunnel, go to the other end of tunnel
 			if ((maze.type == 1) && (cell.tunnelTo != null) && (!isVisited(cell.tunnelTo))) {
 				stack.push(cell.tunnelTo);
 			} else {
 				boolean expandable = false;
+				// Randomly picks a direction
 				int[] dir = randomDir();
 				for (int i = 0; i < 6; i++) {
 					Cell next = cell.neigh[dir[i]];
+					// Check whether next cell is visited or has wall present
 					if ((next != null) && (!cell.wall[dir[i]].present) && (!isVisited(next))) {
+						// If so, add to the stack and removes wall in between
 						stack.push(next);
 						expandable = true;
 						break;

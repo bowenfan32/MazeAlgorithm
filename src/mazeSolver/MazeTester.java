@@ -7,6 +7,7 @@ import maze.*;
 import mazeGenerator.*;
 import mazeSolver.*;
 
+
 /**
  * 
  * @author Youhan Xia
@@ -26,7 +27,6 @@ class MazeTester {
 	 */
 	protected static final PrintStream outStream = System.out;
 
-
 	/**
 	 * Print help/usage message.
 	 */
@@ -35,7 +35,6 @@ class MazeTester {
 		System.err.println("<visualize maze> = <y | n>");
 		System.exit(1);
 	} // end of usage()
-
 
 	/**
 	 * Main function of tester.
@@ -52,6 +51,7 @@ class MazeTester {
 		
 		// flag to indicate whether we visualise maze or not
 		boolean isVisu = false;
+		// note that drawFtPrt(Cell) need to be called for validating the solution
 		switch (args[1]) {
 		case "y":
 			isVisu = true;
@@ -64,7 +64,7 @@ class MazeTester {
 			usage(progName);
 		}
 		
-		// default values for parameters
+		// default values for parameters 
 		String mazeType = "normal";
 		String mazeGeneratorName = "kruskal";
 		String mazeSolverName = "recurBack";
@@ -76,9 +76,9 @@ class MazeTester {
 		int exitC = 1;
 		List<int[]> tunnelList = new ArrayList<int[]>();
 		
-		// read input parameter file
 		File fin = new File(fName);
 		
+		// read input parameter file
 		try {
 			Scanner scanner = new Scanner(fin);
 			mazeType = scanner.next();
@@ -94,23 +94,26 @@ class MazeTester {
 			exitR = Integer.parseInt(scanner.next());
 			exitC = Integer.parseInt(scanner.next());
 
+			// add tunnels
 			while (scanner.hasNext()) {
-                int temp[]= {Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next())};
-                tunnelList.add(temp);
+				int temp[]= {Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next()), Integer.parseInt(scanner.next())};
+				tunnelList.add(temp);
 			}
 			scanner.close();
 		} catch (FileNotFoundException e) {
 			System.err.println("Input file doesn't exist.");
 			usage(progName);
 		}
+
+
+                // check rowNum and colNum
+                if (rowNum < 1 || colNum < 1) {
+                        System.err.println("Row or column number of maze must be at least 1.");
+                        usage(progName);
+                }
+
 		
-		// check rowNum and colNum
-		if (rowNum < 1 || colNum < 1) {
-			System.err.println("Row or column number of maze must be at least 1.");
-			usage(progName);
-		}
-		
-		// construct maze object
+		// construct maze object 
 		Maze maze = null;
 		switch (mazeType) {
 		case "normal":
@@ -157,6 +160,7 @@ class MazeTester {
 
 		// generate maze
 		mazeGen.generateMaze(maze);
+
 		// update whether maze should be visualised
 		maze.isVisu = isVisu;
 
@@ -178,10 +182,10 @@ class MazeTester {
 			case "recurBack":
 				mazeSolver = new RecursiveBacktrackerSolver();
 				break;
-			// sample solver to help you get started
-			case "sample":
-				mazeSolver = new SampleSolver();
-				break;
+                        // sample solver to help you get started
+                        case "sample":
+                                mazeSolver = new SampleSolver();
+                                break;
 			// no solver
 			case "none":
 				break;
@@ -193,14 +197,18 @@ class MazeTester {
 			if (mazeSolver != null) {
 				mazeSolver.solveMaze(maze);
 				outStream.println(mazeSolver.getClass().getSimpleName() + " is solving the maze.");
-				// check if solver can exit maze
+				// check if solver can get out of maze
 				if (mazeSolver.isSolved()) {
 					outStream.println("The maze has been solved!");
 					// display number of cells visited for solver
 					outStream.println("Number of cells visited = " + mazeSolver.cellsExplored());
+					// show results from validation
+					outStream.println("Validation result:");
+					boolean isValid = maze.validate();
+					outStream.println("The solution is " + (isValid ? "" : "not ") + "valid!");
 				} else {
 					outStream.println("Solver was failed!");
-				} 
+				}
 			}
 		}
 	} // end of main()
