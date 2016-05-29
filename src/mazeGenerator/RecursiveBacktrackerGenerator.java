@@ -1,7 +1,5 @@
 package mazeGenerator;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Random;
 import java.util.Stack;
 
@@ -26,13 +24,6 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		this.deltaR = Maze.deltaR;
 		this.deltaC = Maze.deltaC;
 
-		// If maze type is 'normal', use standard coordinates
-		// if (maze.type == 1) {
-		// visited = new boolean[maze.sizeR][maze.sizeC];
-		// } else {
-		// visited = new boolean[maze.sizeR][maze.sizeC + (maze.sizeR + 1) / 2];
-		// }
-
 		if (maze.type == 2) {
 			visited = new boolean[maze.sizeR][maze.sizeC + (maze.sizeR + 1) / 2];
 		} else {
@@ -54,9 +45,8 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 			// visited
 			Cell cell = stack.peek();
 			visited[cell.r][cell.c] = true;
-
 			// If maze has tunnel
-			if ((maze.type == 1) && (!isVisited(cell.tunnelTo) && (cell.tunnelTo != null))) {
+			if ((maze.type == 1) && (cell.tunnelTo != null) && (!isVisited(cell.tunnelTo))) {
 				stack.push(cell.tunnelTo);
 			} else {
 				boolean expandable = false;
@@ -77,9 +67,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 				if (!expandable)
 					stack.pop();
 			}
-
 		}
-
 	} // end of generateMaze()
 
 	boolean isVisited(Cell cell) {

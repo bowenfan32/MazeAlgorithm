@@ -41,7 +41,7 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 			q.add(cell);
 			q2.add(cell2);
 			maze.drawFtPrt(cell);
-			drawFtPrt2(cell2);
+			maze.drawFtPrt(cell2);
 			
 			// If queue 1 contains cells from queue 2 or vice versa, mark solved
 			if (q.contains(cell2) || q2.contains(cell)) {
@@ -58,7 +58,7 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 				
 			} 
 			
-			else { // Randomly picks neighbour, add to queue if unvisited and no walls present
+			else { // Randomly picks neighbor, add to queue if unvisited and no walls present
 				int[] dir = randomDir();
 				for (int i = 0; i < 6; i++) {
 					Cell next = cell.neigh[dir[i]];
@@ -74,7 +74,6 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 				}
 			}
 		}
-
 	} // end of solveMaze()
 
 	boolean isVisited(Cell cell) {
@@ -92,12 +91,6 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 		}
 		return dir;
 	}
-	
-	// Draws in a different color to help visualization
-	public void drawFtPrt2(Cell cell) {
-		StdDraw.setPenColor(StdDraw.RED);
-		StdDraw.filledCircle(cell.c + 0.5, cell.r + 0.5, 0.25);
-	} // end of drawFtPrt()
 
 	@Override
 	public boolean isSolved() {
