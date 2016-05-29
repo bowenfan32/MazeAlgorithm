@@ -6,8 +6,8 @@ import java.util.Random;
 import java.util.Stack;
 import maze.Cell;
 import maze.Maze;
+import maze.TunnelMaze;
 import maze.Wall;
-import sun.reflect.generics.tree.Tree;
 
 public class KruskalGenerator implements MazeGenerator {
 
@@ -16,14 +16,9 @@ public class KruskalGenerator implements MazeGenerator {
 	int deltaR[];
 	int deltaC[];
 
-	Maze maze;
-	List<List<Tree>> _sets;
-	private Stack<Edge> _edges;
-	Random _random = new Random();
-
-	boolean[][] visited = null;
-	Cell[] edgeTo;
-	Random ran = new Random();
+	private List<List<Tree>> sets;
+	private Stack<Edge> edges;
+	Random random = new Random();
 
 	@Override
 	public void generateMaze(Maze maze) {
@@ -32,142 +27,110 @@ public class KruskalGenerator implements MazeGenerator {
 		this.deltaR = Maze.deltaR;
 		this.deltaC = Maze.deltaC;
 
-		if (maze.type == 2) {
-			visited = new boolean[maze.sizeR][maze.sizeC + (maze.sizeR + 1) / 2];
-		} else {
-			visited = new boolean[maze.sizeR][maze.sizeC];
-		}
-
-		_sets = new ArrayList<List<Tree>>();
 		Cell cell = new Cell(0, 0);
-
+		sets = new ArrayList<List<Tree>>();
 		// create a set for each cell
 		if (maze.type == 2) {
 			for (cell.r = 0; cell.r < sizeR; cell.r++) {
-				List<Tree> tmp = new ArrayList<Tree>();
+				List<Tree> tree = new ArrayList<Tree>();
 				for (cell.c = 0; cell.c < sizeC + (cell.r + 1) / 2; cell.c++) {
-					tmp.add(new Tree());
+					tree.add(new Tree());
 				}
-				_sets.add(tmp);
+				sets.add(tree);
 			}
 		} else {
 			for (cell.r = 0; cell.r < sizeR; cell.r++) {
-				List<Tree> tmp = new ArrayList<Tree>();
+				List<Tree> tree = new ArrayList<Tree>();
 				for (cell.c = 0; cell.c < sizeC; cell.c++) {
-					tmp.add(new Tree());
+					tree.add(new Tree());
 				}
-				_sets.add(tmp);
+				sets.add(tree);
 			}
 		}
 
-		_edges = new Stack<Edge>();
+		// Build the collection of edges and randomize.
+		edges = new Stack<Edge>();
 		if (maze.type == 2) {
+			// Edges are "south-west","south-east" and "west" sides of cell,
 			for (cell.r = 0; cell.r < sizeR; cell.r++) {
 				for (cell.c = (cell.r + 1) / 2; cell.c < sizeC + (cell.r + 1) / 2; cell.c++) {
+					// for every odd row
 					if (cell.r > 0 && cell.r % 2 == 1) {
-						_edges.add(new Edge(cell.c, cell.r, Maze.SOUTHWEST));
+						edges.add(new Edge(cell.c, cell.r, Maze.SOUTHWEST));
 					}
+					// for every even row
 					if (cell.r > 0 && cell.r % 2 == 0) {
-						_edges.add(new Edge(cell.c, cell.r, Maze.SOUTHEAST));
+						edges.add(new Edge(cell.c, cell.r, Maze.SOUTHEAST));
 					}
 					if (cell.c > (cell.r + 1) / 2) {
-						_edges.add(new Edge(cell.c, cell.r, Maze.WEST));
+						edges.add(new Edge(cell.c, cell.r, Maze.WEST));
 					}
 				}
 			}
-
-			// for (cell.r = 0; cell.r < sizeR; cell.r++) {
-			// for (cell.c = 0; cell.c < sizeC; cell.c++) {
-			// for (int i = 0; i < 6; i++) {
-			// int[] dir = randomDir();
-			// Cell next = cell.neigh[dir[i]];
-			// // Check whether next cell is visited or has wall present
-			//// System.out.println(next);
-			//// if ((next != null)){
-			//
-			// if (next != null && (cell.wall[dir[i]].present) &&
-			// (!isVisited(next))) {
-			// // If so, add to the stack and removes wall in between
-			// _edges.add(new Edge(cell.c, cell.r, dir[i]));
-			// visited[cell.r][cell.c] = true;
-			// System.out.println(a++);
-			// }
-			// }
-			// }
-			// }
-			
 		} else {
-			// Build the collection of edges and randomize.
 			// Edges are "north" and "west" sides of cell,
-			// if index is greater than 0.
 			for (cell.r = 0; cell.r < sizeR; cell.r++) {
 				for (cell.c = 0; cell.c < sizeC; cell.c++) {
 					if (cell.r > 0) {
-						_edges.add(new Edge(cell.c, cell.r, Maze.SOUTH));
+						edges.add(new Edge(cell.c, cell.r, Maze.SOUTH));
 					}
 					if (cell.c > 0) {
-						_edges.add(new Edge(cell.c, cell.r, Maze.WEST));
+						edges.add(new Edge(cell.c, cell.r, Maze.WEST));
 					}
 				}
 			}
-
 		}
-		shuffle(_edges);
+		shuffle(edges);
 
-		// carvePassages();
-		while (_edges.size() > 0) {
+		while (edges.size() > 0) {
 			// Select the next edge, and decide which direction we are going in.
-			Edge tmp = _edges.pop();
+			Edge tmp = edges.pop();
 			int x = tmp.getX();
 			int y = tmp.getY();
 			cell = maze.map[y][x];
 			int direction = tmp.getDirection();
 
 			if (maze.type == 2) {
-
 				if (cell.c + deltaC[direction] < sizeC + (cell.r + 1) / 2 && cell.r + deltaR[direction] < sizeR) {
-					Cell next = cell.neigh[direction];
 					int dx = cell.c + deltaC[direction];
 					int dy = cell.r + deltaR[direction];
 
 					// Pluck out the corresponding sets
-					Tree set1 = (_sets.get(y)).get(x);
-					Tree set2 = (_sets.get(dy)).get(dx);
+					Tree set1 = (sets.get(y)).get(x);
+					Tree set2 = (sets.get(dy)).get(dx);
 
+					// Connect two sets and remove the wall in between
 					if (!set1.connected(set2)) {
-
-						// Connect the two sets and "knock down" the wall
-						// between
-						// them.
 						set1.connect(set2);
 						cell.wall[direction].present = false;
 					}
 				}
-
 			} else {
 				if (cell.c + deltaC[direction] < sizeC && cell.r + deltaR[direction] < sizeR) {
-					Cell next = cell.neigh[direction];
-					int dx = cell.c + deltaC[direction];
-					int dy = cell.r + deltaR[direction];
 
-					// Pluck out the corresponding sets
-					Tree set1 = (_sets.get(y)).get(x);
-					Tree set2 = (_sets.get(dy)).get(dx);
+					if (cell.tunnelTo != null) {
+						Tree set1 = (sets.get(cell.r)).get(cell.c);
+						Tree set2 = (sets.get(cell.tunnelTo.r)).get(cell.tunnelTo.c);
+						if (!set1.connected(set2)) {
+							set1.connect(set2);
+						}
+					} else {
+						int dx = cell.c + deltaC[direction];
+						int dy = cell.r + deltaR[direction];
 
-					if (!set1.connected(set2)) {
+						// Pluck out the corresponding sets
+						Tree set1 = (sets.get(y)).get(x);
+						Tree set2 = (sets.get(dy)).get(dx);
 
-						// Connect the two sets and "knock down" the wall
-						// between
-						// them.
-						set1.connect(set2);
-						cell.wall[direction].present = false;
-						// cell.wall[Maze.NORTH].present = false;
-						// _grid[dy][dx] |= Maze.OPPOSITE(direction);
+						if (!set1.connected(set2)) {
+							// Connect two sets and remove the wall in between
+							set1.connect(set2);
+							cell.wall[direction].present = false;
+						}
 					}
 				}
 			}
 		}
-
 	} // end of generateMaze()
 
 	/**
@@ -178,7 +141,7 @@ public class KruskalGenerator implements MazeGenerator {
 	 */
 	private void shuffle(List<Edge> args) {
 		for (int i = 0; i < args.size(); ++i) {
-			int pos = _random.nextInt(args.size());
+			int pos = random.nextInt(args.size());
 			Edge tmp1 = args.get(i);
 			Edge tmp2 = args.get(pos);
 			args.set(i, tmp2);
@@ -188,86 +151,57 @@ public class KruskalGenerator implements MazeGenerator {
 
 	class Tree {
 
-		private Tree _parent = null;
+		private Tree parent = null;
 
-		//
 		// Build a new tree object
-		//
 		public Tree() {
 
 		}
 
-		//
 		// If we are joined, return the root. Otherwise, return this object
 		// instance.
-		//
 		public Tree root() {
-			return _parent != null ? _parent.root() : this;
+			return parent != null ? parent.root() : this;
 		}
 
-		//
-		// Are we connected to this tree?
-		//
+		// Check whether the trees are connected
 		public boolean connected(Tree tree) {
 			return this.root() == tree.root();
 		}
 
-		//
 		// Connect to the tree
-		//
 		public void connect(Tree tree) {
 			tree.root().setParent(this);
 		}
 
-		//
 		// Set the parent of the object instance
 		public void setParent(Tree parent) {
-			this._parent = parent;
+			this.parent = parent;
 		}
 	}
 
 	class Edge {
-		private int _x;
-		private int _y;
-		private int _direction;
+		private int x;
+		private int y;
+		private int direction;
 
 		public Edge(int x, int y, int direction) {
-			_x = x;
-			_y = y;
-			_direction = direction;
+			this.x = x;
+			this.y = y;
+			this.direction = direction;
 		}
 
 		public int getX() {
-			return _x;
+			return this.x;
 		}
 
 		public int getY() {
-			return _y;
+			return this.y;
 		}
 
 		public int getDirection() {
-			return _direction;
+			return this.direction;
 		}
 	}
-
-	boolean isVisited(Cell cell) {
-		return this.visited[cell.r][cell.c];
-	}
-
-	protected int[] randomDir() {
-		int[] dir = new int[6];
-		boolean[] present = new boolean[6];
-		for (int i = 0; i < 6; i++) {
-			do {
-				dir[i] = ran.nextInt(6);
-			} while (present[dir[i]] != false);
-			present[dir[i]] = true;
-		}
-		return dir;
-	}
-
-	protected boolean isIn(int r, int c) {
-		return r >= 0 && r < sizeR && c >= (r + 1) / 2 && c < sizeC + (r + 1) / 2;
-	} // end of isIn()
 
 } // end of class KruskalGenerator
