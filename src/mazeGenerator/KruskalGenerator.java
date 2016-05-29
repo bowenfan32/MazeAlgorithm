@@ -111,7 +111,6 @@ public class KruskalGenerator implements MazeGenerator {
 			} else { // normal and tunnel
 				if (cell.c + deltaC[direction] < sizeC && cell.r + deltaR[direction] < sizeR) {
 					if (cell.tunnelTo != null) { // if has tunnel
-
 						// pluck out the corresponding sets
 						Tree set1 = (sets.get(cell.r)).get(cell.c);
 						Tree set2 = (sets.get(cell.tunnelTo.r)).get(cell.tunnelTo.c);

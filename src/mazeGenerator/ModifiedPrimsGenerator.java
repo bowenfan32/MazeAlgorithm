@@ -26,13 +26,16 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 		// Randomly pick a cell
 		int r = random.nextInt(sizeR);
 		int c = random.nextInt(sizeC);
-		Cell tmp = new Cell(r, c);
-		tmp = maze.map[r][c];
+		if (maze.type == 2) { // ensure hex random do not go out of bound
+			r = random.nextInt(sizeR);
+			c = random.nextInt((sizeC - (sizeR + 1) / 2)) + (sizeR + 1) / 2;
+		}
+		Cell startCell = new Cell(r, c);
+		startCell = maze.map[r][c];
 		// and add it to stack
-		setZ.push(tmp);
-
+		setZ.push(startCell);
+		
 		int[] dir = randomDir();
-
 		// put neighboring cell into frontier set F
 		for (int i = 0; i < 6; i++) {
 			Cell cell = setZ.peek();

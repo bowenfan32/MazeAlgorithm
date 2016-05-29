@@ -1,6 +1,7 @@
 package mazeSolver;
 
 import java.util.ArrayDeque;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
@@ -31,7 +32,7 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 		q.add(maze.entrance);
 		q2.add(maze.exit);
 
-		while (!q.isEmpty()) {
+		while (!q.isEmpty() || !q2.isEmpty()) {
 			// Removes head of the queue and mark the cells as visited
 			Cell cell = q.remove();
 			Cell cell2 = q2.remove();
@@ -49,11 +50,9 @@ public class BiDirectionalBFSSolver implements MazeSolver {
 			// If maze has tunnel, go to the other end of the tunnel
 			if ((maze.type == 1) && (cell.tunnelTo != null) && (!isVisited(cell.tunnelTo))) {
 				q.add(cell.tunnelTo);
-				
 			} 
 			if ((maze.type == 1) && (cell2.tunnelTo != null) && (!isVisited(cell2.tunnelTo))) {
 				q2.add(cell2.tunnelTo);
-				
 			} 
 			
 			else { // Randomly picks neighbor, add to queue if unvisited and no walls present

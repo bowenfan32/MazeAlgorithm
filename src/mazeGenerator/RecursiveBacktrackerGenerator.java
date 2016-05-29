@@ -12,7 +12,6 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 	int deltaR[];
 	int deltaC[];
 
-	boolean marked;
 	boolean solved = false;
 	boolean[][] visited = null;
 	Random ran = new Random();
@@ -23,6 +22,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		this.sizeR = maze.sizeR;
 		this.deltaR = Maze.deltaR;
 		this.deltaC = Maze.deltaC;
+
 
 		// If maze type is 'normal', use standard coordinates
 		if (maze.type == 2) {
@@ -35,8 +35,13 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 
 		// Randomly pick a cell and add it to stack
 		Random random = new Random();
+
 		int r = random.nextInt(sizeR);
 		int c = random.nextInt(sizeC);
+		if (maze.type == 2) { // ensure hex random do not go out of bound
+			r = random.nextInt(sizeR);
+			c = random.nextInt((sizeC - (sizeR + 1) / 2)) + (sizeR + 1) / 2;
+		}
 		Cell startCell = new Cell(r, c);
 		startCell = maze.map[r][c];
 		stack.push(startCell);
