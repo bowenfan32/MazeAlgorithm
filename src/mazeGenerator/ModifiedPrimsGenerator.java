@@ -3,6 +3,7 @@ package mazeGenerator;
 import maze.Maze;
 import maze.Cell;
 import java.util.Random;
+import java.util.Stack;
 
 public class ModifiedPrimsGenerator implements MazeGenerator {
 
@@ -10,13 +11,9 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 	int sizeR;
 	int deltaR[];
 	int deltaC[];
-
-	private static int IN = 0;
-	private static int FRONTIER = 1;
-	private static int OUT = 2;
+	Random random = new Random();
 
 
-	
 	@Override
 	public void generateMaze(Maze maze) {
 		this.sizeC = maze.sizeC;
@@ -24,148 +21,71 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 		this.deltaR = Maze.deltaR;
 		this.deltaC = Maze.deltaC;
 
-		int dir[] = {Maze.SOUTH,Maze.EAST,Maze.NORTH,Maze.WEST};
-		int randir=(int)(Math.random()*dir.length);
-		int randomdir = dir[randir];
-		Random random = new Random();
+		Stack<Cell> setZ = new Stack();
+		Stack<Cell> setF = new Stack();
+
+		// Step 1
+		// Randomly pick a cell
 		int r = random.nextInt(sizeR);
 		int c = random.nextInt(sizeC);
-		Cell cell = new Cell(r, c);
-		cell = maze.map[r][c];
-		System.out.println("start :" +r +"  "+c);
-		
-		int[] cells = new int[sizeR*sizeC];
-		for (int i = 0; i < sizeR*sizeC; i++) {
+		Cell tmp = new Cell(r, c);
+		tmp = maze.map[r][c];
+		// and add it to stack
+		setZ.push(tmp);
 
-			cells[i] = OUT;
-			
-		}//cells = out
-		
-		int[] frontierCells = new int[sizeR*sizeC];
-		cells[cell.r*sizeC + cell.c] = IN;
-		int frontierCount = 0;
-		for (int i = 0; i < 4; i++) {
-			switch (i) {
-			case 0:
-				if (r > 0) {
-					int index = (r - 1) * sizeC + c;
-					cells[(r-1)*sizeC + c] = FRONTIER;
-					frontierCells[frontierCount++] = index;
-					System.out.println("frontier count: " + frontierCount );
-					System.out.println("down frontier");
-				}//down
-				break;
-			case 1:
-				if (c < sizeC - 1) {
-					int index = r * sizeR + (c + 1);
-					cells[r*sizeC+c+1] = FRONTIER;
-					frontierCells[frontierCount++] = index;
-					System.out.println("frontier count: " + frontierCount );
-					System.out.println("right frontier");
-				}//right
-				break;
-			case 2:
-				if (r < sizeR - 1) {
-					int index = (r + 1) * sizeC + c;
-					cells[(r+1)*sizeC+c] = FRONTIER;
-					frontierCells[frontierCount++] = index;
-					System.out.println("frontier count: " + frontierCount );
-					System.out.println("up frontier");
-				}//up
-				break;
-			case 3:
-				if (c > 0) {
-					int index = r * sizeC + (c - 1);
-					cells[r*sizeC+c-1] = FRONTIER;
-					frontierCells[frontierCount++] = index;
-					System.out.println("left frontier");
-				}//left
-				break;
+		int[] dir = randomDir();
+
+		// put neighboring cell into frontier set F
+		for (int i = 0; i < 6; i++) {
+			Cell cell = setZ.peek();
+			Cell neigh = cell.neigh[dir[i]];
+			if ((neigh != null) && (cell.wall[dir[i]].present) && !setF.contains(neigh) && !setZ.contains(neigh)) {
+				setF.push(neigh);
 			}
+
 		}
-		int[] inNeighbours = new int[4];
-		while (frontierCount > 0) {
-			int frontierCellIndex = random.nextInt(frontierCount);
-			int index = frontierCells[frontierCellIndex];
-			System.out.println("index : "+index);
-			int x = index % sizeC;
-			int y = index / sizeC;
-			int inNeighbourCount = 0;
-			for (int i = 0; i < 4; i++) {
-				switch (i) {
-				case 0:
-					if (y > 0 && cells[(y-1)*sizeC+x] == IN) {
-						inNeighbours[inNeighbourCount++] = i;
-						System.out.println("inNeighbour : down ");
-					}
-					break;
-				case 1:
-					if (x < sizeC - 1 && cells[y*sizeC+x+1] == IN) {
-						inNeighbours[inNeighbourCount++] = i;
-						System.out.println("inNeighbour : right");
-					}
-					break;
-				case 2:
-					if (y < sizeR - 1 && cells[(y+1)*sizeC+x] == IN) {
-						inNeighbours[inNeighbourCount++] = i;
-						System.out.println("inNeighbour : up");
-					}
-					break;
-				case 3:
-					if (x > 0 && cells[y*sizeC+x-1] == IN) {
-						inNeighbours[inNeighbourCount++] = i;
-						System.out.println("inNeighbour : left");
-					}
-					break;
-				}
-
-			}
-			maze.map[y][x].wall[dir[inNeighbours[random.nextInt(inNeighbourCount)]]].present = false;
-			cells[index] = IN;
-			if (frontierCellIndex < frontierCount - 1) {
-				System.arraycopy(frontierCells, frontierCellIndex + 1, frontierCells, frontierCellIndex,
-						frontierCount - frontierCellIndex - 1);
-			}
-			frontierCount--;
-
-			for (int i = 0; i < 4; i++) {
-				switch (i) {
-				case 0:
-					if (y > 0 && cells[index-sizeC] == OUT) {
-						cells[index-sizeC] = FRONTIER;
-						frontierCells[frontierCount++] = index - sizeC;
-						System.out.println("frontierCells : "+ (index-sizeC));
-					}
-					break;
-				case 1:
-					if (x < sizeC - 1 && cells[index+1] == OUT) {
-						cells[index+1] = FRONTIER;
-						frontierCells[frontierCount++] = index+1;
-						System.out.println("frontierCells : "+ (index+1));
-					}
-					break;
-				case 2:
-					if (y < sizeR - 1 && cells[index+sizeC] == OUT) {
-						cells[index+sizeC] = FRONTIER;
-						frontierCells[frontierCount++] = index + sizeC;
-						System.out.println("frontierCells : "+ (index+sizeC));
-						
-					}
-					break;
-				case 3:
-					if (x > 0 && cells[index-1] == OUT) {
-						cells[index-1] = FRONTIER;
-						frontierCells[frontierCount++] = index - 1;
-						System.out.println("frontierCells : "+ (index-1));
-						
-					}
+		while (!setF.isEmpty()) {
+			// Step 2
+			// randomly select a cell form set F and remove it
+			int randomCellIndex = random.nextInt(setF.size());
+			Cell randomCell = setF.get(randomCellIndex);
+			// randomly select a cell from a neighbor thats in set z and
+			// adjacent
+			for (int i = 0; i < 6; i++) {
+				Cell randomCellNeigh = randomCell.neigh[dir[i]];
+				if (setZ.contains(randomCellNeigh)) {
+					// carve a path
+					randomCell.wall[dir[i]].present = false;
 					break;
 				}
 			}
-		}
-		// TODO Auto-generated method stub
+			setF.remove(randomCellIndex);
 
+			// Step 3
+			// add cell c to set Z
+			setZ.push(randomCell);
+			// Add its neighbor to frontier set
+			for (int i = 0; i < 6; i++) {
+				Cell cell = setZ.peek();
+				Cell neigh = cell.neigh[dir[i]];
+				if ((neigh != null) && (cell.wall[dir[i]].present) && !setF.contains(neigh) && !setZ.contains(neigh)) {
+					setF.push(neigh);
+				}
+			}
+		}
 	} // end of generateMaze()
 
-} // end of class ModifiedPrimsGenerator
+	protected int[] randomDir() {
+		int[] dir = new int[6];
+		boolean[] present = new boolean[6];
+		for (int i = 0; i < 6; i++) {
+			do {
+				dir[i] = random.nextInt(6);
+			} while (present[dir[i]] != false);
+			present[dir[i]] = true;
+		}
+		return dir;
+	}
 
+
+} // end of class ModifiedPrimsGenerator
