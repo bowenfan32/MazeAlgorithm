@@ -24,6 +24,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		this.deltaR = Maze.deltaR;
 		this.deltaC = Maze.deltaC;
 
+		// If maze type is 'normal', use standard coordinates
 		if (maze.type == 2) {
 			visited = new boolean[maze.sizeR][maze.sizeC + (maze.sizeR + 1) / 2];
 		} else {
@@ -36,20 +37,21 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		Random random = new Random();
 		int r = random.nextInt(sizeR);
 		int c = random.nextInt(sizeC);
-		Cell tmp = new Cell(r, c);
-		tmp = maze.map[r][c];
-		stack.push(tmp);
+		Cell startCell = new Cell(r, c);
+		startCell = maze.map[r][c];
+		stack.push(startCell);
 
 		while (!stack.isEmpty()) {
 			// Mark first cell in stack as the current cell, and mark it as
 			// visited
 			Cell cell = stack.peek();
 			visited[cell.r][cell.c] = true;
-			// If maze has tunnel
+
+			// If maze has unvisited tunnel
 			if ((maze.type == 1) && (cell.tunnelTo != null) && (!isVisited(cell.tunnelTo))) {
 				stack.push(cell.tunnelTo);
 			} else {
-				boolean expandable = false;
+				boolean validMove = false;
 				// Randomly picks a direction
 				int[] dir = randomDir();
 				for (int i = 0; i < 6; i++) {
@@ -60,12 +62,13 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 						// If so, add to the stack and removes wall in between
 						stack.push(next);
 						cell.wall[dir[i]].present = false;
-						expandable = true;
+						validMove = true;
 						break;
 					}
 				}
-				if (!expandable)
+				if (!validMove) { // if no valid move, go back
 					stack.pop();
+				}
 			}
 		}
 	} // end of generateMaze()
@@ -74,6 +77,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		return visited[cell.r][cell.c];
 	}
 
+	// randomizes direction
 	protected int[] randomDir() {
 		int[] dir = new int[6];
 		boolean[] present = new boolean[6];

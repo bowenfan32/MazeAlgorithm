@@ -29,8 +29,9 @@ public class KruskalGenerator implements MazeGenerator {
 
 		Cell cell = new Cell(0, 0);
 		sets = new ArrayList<List<Tree>>();
+
 		// create a set for each cell
-		if (maze.type == 2) {
+		if (maze.type == 2) { // hex
 			for (cell.r = 0; cell.r < sizeR; cell.r++) {
 				List<Tree> tree = new ArrayList<Tree>();
 				for (cell.c = 0; cell.c < sizeC + (cell.r + 1) / 2; cell.c++) {
@@ -38,7 +39,7 @@ public class KruskalGenerator implements MazeGenerator {
 				}
 				sets.add(tree);
 			}
-		} else {
+		} else { // normal and tunnel
 			for (cell.r = 0; cell.r < sizeR; cell.r++) {
 				List<Tree> tree = new ArrayList<Tree>();
 				for (cell.c = 0; cell.c < sizeC; cell.c++) {
@@ -50,8 +51,9 @@ public class KruskalGenerator implements MazeGenerator {
 
 		// Build the collection of edges and randomize.
 		edges = new Stack<Edge>();
-		if (maze.type == 2) {
-			// Edges are "south-west","south-east" and "west" sides of cell,
+		if (maze.type == 2) { // for hex maze
+			// Edges are "south-west" and "west" sides of the cell for odd row
+			// "south-east" and "west" side of the cell for every even row
 			for (cell.r = 0; cell.r < sizeR; cell.r++) {
 				for (cell.c = (cell.r + 1) / 2; cell.c < sizeC + (cell.r + 1) / 2; cell.c++) {
 					// for every odd row
@@ -80,7 +82,8 @@ public class KruskalGenerator implements MazeGenerator {
 				}
 			}
 		}
-		shuffle(edges);
+		// shuffle the edges
+		randomize(edges);
 
 		while (edges.size() > 0) {
 			// Select the next edge, and decide which direction we are going in.
@@ -90,7 +93,7 @@ public class KruskalGenerator implements MazeGenerator {
 			cell = maze.map[y][x];
 			int direction = tmp.getDirection();
 
-			if (maze.type == 2) {
+			if (maze.type == 2) { // hex
 				if (cell.c + deltaC[direction] < sizeC + (cell.r + 1) / 2 && cell.r + deltaR[direction] < sizeR) {
 					int dx = cell.c + deltaC[direction];
 					int dy = cell.r + deltaR[direction];
@@ -105,20 +108,22 @@ public class KruskalGenerator implements MazeGenerator {
 						cell.wall[direction].present = false;
 					}
 				}
-			} else {
+			} else { // normal and tunnel
 				if (cell.c + deltaC[direction] < sizeC && cell.r + deltaR[direction] < sizeR) {
+					if (cell.tunnelTo != null) { // if has tunnel
 
-					if (cell.tunnelTo != null) {
+						// pluck out the corresponding sets
 						Tree set1 = (sets.get(cell.r)).get(cell.c);
 						Tree set2 = (sets.get(cell.tunnelTo.r)).get(cell.tunnelTo.c);
 						if (!set1.connected(set2)) {
+							// connect two sets
 							set1.connect(set2);
 						}
-					} else {
+					} else { // if no tunnel
 						int dx = cell.c + deltaC[direction];
 						int dy = cell.r + deltaR[direction];
 
-						// Pluck out the corresponding sets
+						// pluck out the corresponding sets
 						Tree set1 = (sets.get(y)).get(x);
 						Tree set2 = (sets.get(dy)).get(dx);
 
@@ -133,13 +138,8 @@ public class KruskalGenerator implements MazeGenerator {
 		}
 	} // end of generateMaze()
 
-	/**
-	 * Randomly shuffle a List.
-	 * 
-	 * @param args
-	 *            List (of Edges) to be randomly shuffled.
-	 */
-	private void shuffle(List<Edge> args) {
+	// randomly shuffles the list of edges
+	private void randomize(List<Edge> args) {
 		for (int i = 0; i < args.size(); ++i) {
 			int pos = random.nextInt(args.size());
 			Edge tmp1 = args.get(i);
@@ -180,6 +180,7 @@ public class KruskalGenerator implements MazeGenerator {
 		}
 	}
 
+	// construct edge instance
 	class Edge {
 		private int x;
 		private int y;

@@ -6,13 +6,11 @@ import java.util.Random;
 import java.util.Stack;
 
 public class ModifiedPrimsGenerator implements MazeGenerator {
-
 	int sizeC;
 	int sizeR;
 	int deltaR[];
 	int deltaC[];
 	Random random = new Random();
-
 
 	@Override
 	public void generateMaze(Maze maze) {
@@ -44,11 +42,12 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 			}
 
 		}
-		while (!setF.isEmpty()) {
+		while (!setF.isEmpty()) { // loop until no frontier cells 
 			// Step 2
 			// randomly select a cell form set F and remove it
 			int randomCellIndex = random.nextInt(setF.size());
 			Cell randomCell = setF.get(randomCellIndex);
+			
 			// randomly select a cell from a neighbor thats in set z and
 			// adjacent
 			for (int i = 0; i < 6; i++) {
@@ -75,6 +74,7 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 		}
 	} // end of generateMaze()
 
+	// randomizes direction
 	protected int[] randomDir() {
 		int[] dir = new int[6];
 		boolean[] present = new boolean[6];
