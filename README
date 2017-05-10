@@ -1,5 +1,4 @@
-To compile on server:
-javac -cp .:mazeSolver/SampleSolver.jar *.java
+Implementation of maze generation algorithm using recursive backtrack algorithm, Prim's algorithm and Kruskal's algorithm
 
-To run on server:
-java -cp .:mazeSolver/SampleSolver.jar MazeTester inputFilename n
+Recursive backtrack and Bi-directional BFS algorithms was used to solve the maze.
+
